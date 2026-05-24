@@ -1,0 +1,30 @@
+# .agentsmdrc.yaml — agents-toc dogfooding itself.
+# Indexes its own docs/ directory as "knowledge" so an agent working in this
+# repo can see the doc index without loading every page up front.
+version: 1
+sources:
+  - glob: "docs/**/*.md"
+    label: knowledge
+    frontmatter:
+      name_field: id
+      summary_field: summary
+      require: [id, summary]
+      respect_disabled: true
+target:
+  file: AGENTS.md
+  marker_start: "<!-- INDEX:START -->"
+  marker_end: "<!-- INDEX:END -->"
+  create_if_missing: true
+render:
+  group_by: label
+  sort: alphabetical
+  line_template: "- `{path}` — {summary}"
+  group_template: "### {label}/\n\n{lines}\n"
+  empty_message: "_no entries_"
+ignore:
+  - "**/node_modules/**"
+  - "**/.git/**"
+  - "bin/**"
+  - "dist/**"
+  - "examples/**"
+  - "testdata/**"

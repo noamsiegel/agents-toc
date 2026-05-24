@@ -1,0 +1,94 @@
+version: 2
+
+project_name: agents-toc
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: agents-toc
+    main: ./
+    binary: agents-toc
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X github.com/noamsiegel/agents-toc/internal/buildinfo.Version={{.Version}}
+      - -X github.com/noamsiegel/agents-toc/internal/buildinfo.Commit={{.ShortCommit}}
+      - -X github.com/noamsiegel/agents-toc/internal/buildinfo.Date={{.Date}}
+    goos:
+      - darwin
+      - linux
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
+
+archives:
+  - id: default
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else }}{{ .Arch }}{{ end }}
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - LICENSE
+      - README.md
+      - docs/**/*
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  version_template: '{{ .Tag }}-snapshot-{{ .ShortCommit }}'
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+      - 'merge conflict'
+
+brews:
+  - name: agents-toc
+    repository:
+      owner: noamsiegel
+      name: homebrew-tap
+      branch: main
+    homepage: "https://github.com/noamsiegel/agents-toc"
+    description: "Keep a one-line lazy-load index inside AGENTS.md in sync."
+    license: "MIT"
+    test: |
+      system "#{bin}/agents-toc", "version"
+      # exercise the core invariant: scaffold a tiny project, sync, and
+      # confirm the managed block was produced.
+      mkdir testpath/"smoke"
+      cd testpath/"smoke" do
+        (Pathname.pwd/"skills/example").mkpath
+        (Pathname.pwd/"skills/example/SKILL.md").write "---\nname: example\ndescription: brew test\n---\n"
+        system "#{bin}/agents-toc", "init"
+        system "#{bin}/agents-toc", "sync"
+        assert_match "<!-- INDEX:START -->", (Pathname.pwd/"AGENTS.md").read
+        assert_match "skills/example/SKILL.md", (Pathname.pwd/"AGENTS.md").read
+      end
+    install: |
+      bin.install "agents-toc"
+
+release:
+  github:
+    owner: noamsiegel
+    name: agents-toc
+  draft: false
+  prerelease: auto
+  name_template: "v{{.Version}}"

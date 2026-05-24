@@ -1,0 +1,29 @@
+version: 1
+sources:
+  - glob: "skills/**/SKILL.md"
+    label: skill
+    frontmatter:
+      name_field: name
+      summary_field: description
+      respect_disabled: true
+  - glob: "knowledge/**/*.md"
+    label: knowledge
+    frontmatter:
+      name_field: id
+      summary_field: summary
+      require: [id, summary]
+      respect_disabled: true
+target:
+  file: AGENTS.md
+  marker_start: "<!-- INDEX:START -->"
+  marker_end: "<!-- INDEX:END -->"
+  create_if_missing: true
+render:
+  group_by: label
+  sort: alphabetical
+  line_template: "- `{path}` — {summary}"
+  group_template: "### {label}/\n\n{lines}\n"
+  empty_message: "_no entries_"
+ignore:
+  - "**/node_modules/**"
+  - "**/.git/**"
