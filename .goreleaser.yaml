@@ -66,6 +66,7 @@ brews:
       owner: noamsiegel
       name: homebrew-tap
       branch: main
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
     homepage: "https://github.com/noamsiegel/agents-toc"
     description: "Keep a one-line lazy-load index inside AGENTS.md in sync."
     license: "MIT"
