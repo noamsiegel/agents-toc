@@ -62,6 +62,7 @@ changelog:
 
 brews:
   - name: agents-toc
+    directory: Formula
     repository:
       owner: noamsiegel
       name: homebrew-tap
