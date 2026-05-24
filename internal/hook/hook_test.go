@@ -3,6 +3,7 @@ package hook
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -117,6 +118,9 @@ func TestInstallHuskyCreatesFile(t *testing.T) {
 	}
 	if !strings.Contains(string(body), BuildCommand("")) {
 		t.Errorf("husky hook missing command\n%s", body)
+	}
+	if runtime.GOOS == "windows" {
+		return // POSIX exec bit has no Windows equivalent
 	}
 	st, _ := os.Stat(filepath.Join(root, ".husky", "pre-commit"))
 	if st.Mode().Perm()&0o111 == 0 {

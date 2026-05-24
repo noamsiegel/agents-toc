@@ -3,6 +3,7 @@ package target
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 )
 
@@ -22,6 +23,9 @@ func TestWriteAtomicCreates(t *testing.T) {
 }
 
 func TestWriteAtomicPreservesMode(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("POSIX file modes do not map to Windows ACLs")
+	}
 	dir := t.TempDir()
 	path := filepath.Join(dir, "AGENTS.md")
 	if err := os.WriteFile(path, []byte("x"), 0o600); err != nil {
